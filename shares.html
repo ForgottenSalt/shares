@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shares</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <style>
+        /* Styling that is used to jazz up our displayed table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #d6eeee;
+        }
+    </style>
+
+    <script>
+        const currentSharePrice = 4.44; // Example current share price
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('currentSharePrice').textContent = `Current Share Price: £${currentSharePrice.toFixed(2)} - hard coded for now`;
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Shares Information</h1>
+    <p>This page contains information about shares.</p>
+    <p id="currentSharePrice"></p> <!-- Display current share price using the code in the script section. -->
+    <!-- note, we are in html now, so the way we comment has changed -->
+    <!-- Button to load shares data from the API -->
+    <button onclick="
+        fetch('http://192.168.8.221:8000/free', {
+            method: 'GET',
+                headers: {
+                    'Access-Control-Allow-Origin': '*', /* Allow cross-origin requests - necessary for browser security - necessary because it wouldn't work otherwise!*/
+                    'Content-Type': 'application/json' /* Specify that we expect JSON data from the server - we should also be using the encoding type - future work honest */
+                },
+        }
+        )
+        .then(response => response.json()) /* wait until we get a response and then grab the response as JSON */
+
+        .then(data => { /* now we have the data from the server we need to process it */
+            //console.log('Data received:', data);
+
+            data = JSON.parse(data) /* the data is a JSON string so we need to parse it into a JavaScript object - took me ages to find I needed to use .parse() */
+            console.log('Parsed Data:', data);
+
+            let totalShares=0; /* initialize our totals - the variables could be better named I know */
+            let totalCostValue=0.0; /* we are keepimng some running totals so they all needed to be stored somewhere separately */
+            let totalPartner =0
+            let totalMatching=0
+            let totalDividends=0
+
+            let totalPartnerCost=0.0
+            let totalMatchingCost=0.0
+            let totalDividendsCost=0.0
+
+            profit=0.0
+            totalProfit=0.0
+
+            // format our table - the only bit I really bother formatting properly
+            // Here we are creating the header row of the table
+            // using template literals (the backtick ` character) to make it easier to create multi-line strings
+            // each <th> element represents a column header
+            // we will add the data rows in the next step
+            // by concatenating more rows to this header we have just created
+
+            table = `
+                <table>
+                    <tr>
+                        <th>
+                            Purchase Date
+                        </th>
+                        <th>
+                            Share Type
+                        </th>
+                        <th>
+                            Share Price (£)
+                        </th>
+                        <th>
+                            Quantity Purchased
+                        </th>
+                        <th>
+                            Cost Price (£)
+                        </th>
+                        <th>
+                            Current Value (£)
+                        </th>
+                        <th>
+                            Profit (£)
+                        </th>
+                    </tr>`; 
+            
+            // now loop through *each* item in the data array one by one and add a row to the table for each item
+            data.forEach((item) => {
+                profit = (item.quantity_purchased*currentSharePrice)-item.cost_value;
+                totalProfit += profit; // keep a running total of profit
+                // add a row to the table for this item
+                table += `<tr><td>${item.formatted_date}</td><td>${item.share_type}</td><td>£${item.purchase_price.toFixed(3)}</td><td>${item.quantity_purchased}</td><td>£${item.cost_value.toFixed(2)}</td><td>£${(item.quantity_purchased*currentSharePrice).toFixed(2)}</td><td>£${profit.toFixed(2)}</td></tr>`;
+                totalShares += item.quantity_purchased
+                totalCostValue += item.cost_value;
+
+                // now update our totals based on share type
+                if (item.share_type === 'Partnership shares') {
+                    totalPartner += item.quantity_purchased;
+                    totalPartnerCost += item.cost_value;
+                } else if (item.share_type === 'Matching shares') {
+                    totalMatching += item.quantity_purchased;
+                    totalMatchingCost += item.cost_value;
+                } else if (item.share_type === 'Dividend shares') {
+                    totalDividends += item.quantity_purchased;
+                    totalDividendsCost += item.cost_value;
+                }
+            });
+
+            // now we have finished building the table
+            // create the summary section at the bottom
+            div = document.getElementById('shares-data');
+
+            div.innerHTML = table + '</table>';
+            totalsDiv = document.getElementById('totals');
+            totalTables = '<table><tr><th>Share Type</th><th>Number Of Shares</th><th>Cost(£)</th><th>Current Value (£)</th></tr>';
+            totalTables += `<tr><td>Partnership</td><td>${totalPartner}</td><td>£${totalPartnerCost.toFixed(2)}</td><td>£${(totalPartner*currentSharePrice).toFixed(2)}</td></tr>`;
+            totalTables += `<tr><td>Matching</td><td>${totalMatching}</td><td>£${totalMatchingCost.toFixed(2)}</td><td>£${(totalMatching*currentSharePrice).toFixed(2)}</td></tr>`;
+            totalTables += `<tr><td>Dividend</td><td>${totalDividends}</td><td>£${totalDividendsCost.toFixed(2)}</td><td>£${(totalDividends*currentSharePrice).toFixed(2)}</td></tr>`;
+            totalTables += '</table>';
+            totalsDiv.innerHTML = totalTables;
+
+            totalsFinalDiv = document.getElementById('final totals');
+            finalTable = '<table><tr><th> </th><th> </th></tr>';
+            finalTable += `<tr><td>Total Free Shares</td><td>${totalShares}</td></tr>`;
+            finalTable += `<tr><td>Cost Price</td><td>£${totalCostValue.toFixed(2)}</td></tr>`;
+            finalTable += `<tr><td>Current Value</td><td>£${(totalShares*currentSharePrice).toFixed(2)}</td></tr>`;
+            finalTable += `<tr><td>Total Profit</td><td>£${totalProfit.toFixed(2)}</td></tr>`;
+            finalTable += '</table>';   
+            
+            totalsFinalDiv.innerHTML = finalTable;
+
+        })
+        .catch(error => console.error('Error fetching data:', error));
+        ">Load Shares Data <!-- this is the text on the button -->  
+    </button>
+
+    <p> </p>
+    <div id="shares-data"></div> <!-- This is where we will put our table of shares data -->
+
+    <h3>Summary</h3>
+    <div id="totals"></div>
+    <p> </p>
+    <div id="final totals"></div>
+        
+</body>
+
+</html>

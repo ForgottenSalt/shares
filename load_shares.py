@@ -83,6 +83,8 @@ print("Table created successfully in PostgreSQL ")
 #insert into taxfree values (111,'2020-10-09', 'Partnership shares', 0.99000, 151)
 #insert into taxfree values (112,'2020-11-11', 'Partnership shares', 1.10000, 136)
 #insert into taxfree values (113,'2020-12-09', 'Partnership shares', 1.44000, 103)
+#
+# or just edit the csv file to include the above?!
 
 with open('Export tax free.csv', newline='') as taxfree:
      reader = csv.reader(taxfree,delimiter=',')
@@ -118,17 +120,25 @@ with open('Export tax free.csv', newline='') as taxfree:
           #
           #### as we have already inserted these records once, we will comment this out to avoid duplicate entries
           #
-          #    cursor.execute("INSERT INTO taxfree (purchase_date,share_type,purchase_price,quantity_purchased) VALUES (%s,%s,%s,%s)",
-          #        values)
+          cursor.execute("INSERT INTO taxfree (purchase_date,share_type,purchase_price,quantity_purchased) VALUES (%s,%s,%s,%s)",
+                  values)
 
 # now we will read back the data from the table and print to the console
 #   
 cursor.execute("SELECT id, purchase_date,share_type, purchase_price, quantity_purchased from taxfree order by purchase_date;")
 #rows = cursor.fetchone()
-for row in cursor:
-     print(row[0],row[1],row[2],row[3], float(row[2])*int(row[3]) )
+# Error on below line - need to investigate - but commented it out THINK IT SHOULD BE row[3]*row[4], row[2] is share type
+#
+#Traceback (most recent call last):
+#  File "h:\home\python\postgres\load_shares.py", line 131, in <module>
+#    print(row[0],row[1],row[2],row[3], float(row[2])*int(row[3]) )
+#                                       ~~~~~^^^^^^^^
+#ValueError: could not convert string to float: 'Partnership shares'
 
-#conn.commit()
+#for row in cursor:
+#     print(row[0],row[1],row[2],row[3], float(row[2])*int(row[3]) )
+
+conn.commit()
 # below should probably be index instead of rowcount because that seems to always return 1 indicating the last row
 #print(cursor.rowcount, "Record inserted successfully into taxfree table")
 

@@ -162,3 +162,56 @@ def get_free():
 
     # debugging placeholder return
     #return {"message": "This is a placeholder for the taxfree endpoint."}
+
+##########################################
+# NEW API ENDPOINT BELOW
+##########################################
+# Below is the /dates endpoint which will eventually return records from taxfree table between specified start and end dates
+# we are using query parameters to pass the start and end dates to the endpoint
+# the parameters are optional and have default values of '2011-01-01' and '2026-12-31' respectively
+# you can call this endpoint with /dates/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+#
+# e.g. /dates/?start_date=2011-01-01&end_date=2020-12-31 
+# e.g. http://localhost:8000/dates/?start_date=2011-1-1&end_date=2025-12-31
+# can also call it like this and use the default range that is defined:
+# e.g. /dates/  (this will use the default start and end dates defined in the function parameters)
+#
+# http://localhost:8000/dates/
+#
+@app.get("/dates/")
+def get_dates(start_date: str = '2011-01-01', end_date: str = '2026-12-31'):
+
+    # for debugging purposes, print the received start and end dates
+    print(f"Received start_date: {start_date} and end_date: {end_date}")
+
+    # execute a SQL query to fetch records from taxfree table between the specified start and end dates
+    # we are also formatting the purchase_date to DD/MM/YYYY format for better readability
+    # note, zero validation is done here, we are assuming data in table is correct and will be returned - bad practice!
+    # we are also calculating the cost_value as purchase_price * quantity_purchased
+    # note that the date format in the database is assumed to be YYYY-MM-DD for the comparison to work correctly
+    # we are also ordering the results by purchase_date for better readability
+    # we are using f-string to format the SQL query with the provided start and end dates 
+    # note that in production code, you should use parameterized queries to prevent SQL injection attacks
+    # for example, you could use cursor.execute("SELECT ... WHERE purchase_date >= %s AND purchase_date <= %s", (start_date, end_date)) instead of f-string formatting
+    # FINAL Warning: the current implementation with f-string is vulnerable to SQL injection if user input is not properly validated, so be cautious when using this in production or with untrusted input!
+    
+    cursor.execute(f"SELECT \
+                id,\
+                TO_CHAR(purchase_date, 'DD/MM/YYYY') AS formatted_date,\
+                share_type,\
+                purchase_price,\
+                quantity_purchased,\
+                purchase_price * quantity_purchased as cost_value \
+                FROM taxfree \
+                WHERE purchase_date >= '{start_date}' AND purchase_date <= '{end_date}' \
+                ORDER BY purchase_date;")
+    
+    # fetch all rows from the executed query and store in rows variable
+    rows = cursor.fetchall()
+    # convert the rows to a list of dictionaries for JSON serialisation
+    columns = [col[0] for col in cursor.description]    
+    data = [dict(zip(columns, row)) for row in rows]
+    # convert the data to JSON format   
+    to_json = json.dumps(data, default=str)
+    return(to_json)
+    #return {"message": f"This is a placeholder for the dates endpoint. You provided start_date: {start_date} and end_date: {end_date}."}    

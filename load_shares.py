@@ -49,6 +49,18 @@ print("You are connected to - ", record,"\n")
 # note the columns and their data types
 # ID is the primary key and will auto increment every time a new record is added
 
+## Only execute the following if you want to erase the table and start a fresh upload of all data from the CSV file
+## otherwise it will insert rows into the existing table and you will have duplicate records
+##
+## WARNING ! so yah, this actually doesn't work and seems to lock out the database and makes it unresponsive 
+## so just manually drop the table from postgress via url: http://192.168.8.227:5050/browser/
+## does it need the cursor to close and then reopen?
+#create_drop_query = "DROP TABLE taxfree;"
+#cursor.execute(create_drop_query)
+#conn.commit()
+
+#####
+
 create_table_query = '''CREATE TABLE IF NOT EXISTS taxfree
           (ID SERIAL PRIMARY KEY     NOT NULL,
           purchase_date          DATE    NOT NULL,
@@ -86,7 +98,7 @@ print("Table created successfully in PostgreSQL ")
 #
 # or just edit the csv file to include the above?!
 
-with open('Export tax free.csv', newline='') as taxfree:
+with open(r'data\Export tax free.csv', newline='') as taxfree:
      reader = csv.reader(taxfree,delimiter=',')
      # the first row is the header row so skip it
      # a header row looks like this:

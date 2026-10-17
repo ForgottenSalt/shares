@@ -42,7 +42,7 @@
 # uvicorn main:app --reload --host 0.0.0.0
 #
 # if running from visual studio code, make sure you right click on the shares.html and select "Open with Live Server" to view the HTML page in your browser
-# otherwise there is nothing to stand up the html file.
+# otherwise there is nothing to stand up the html files
 #
 from fastapi import FastAPI
 import psycopg2

@@ -41,6 +41,9 @@
 # the command to run the server is: (be sure you are in the correct directory where main.py is located)
 # uvicorn main:app --reload --host 0.0.0.0
 #
+# if running from visual studio code, make sure you right click on the shares.html and select "Open with Live Server" to view the HTML page in your browser
+# otherwise there is nothing to stand up the html file.
+#
 from fastapi import FastAPI
 import psycopg2
 import json

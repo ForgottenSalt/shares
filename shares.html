@@ -24,10 +24,10 @@
     </style>
 
     <script>
-        const currentSharePrice = 4.75; // Example current share price
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('currentSharePrice').textContent = `Current Share Price: £${currentSharePrice.toFixed(2)} - hard coded for now`;
-        });
+        //const currentSharePrice = 4.3265; // Example current share price
+        //document.addEventListener('DOMContentLoaded', () => {
+        //    document.getElementById('currentSharePrice').textContent = `Current Share Price: £${currentSharePrice.toFixed(2)} - hard coded for now`;
+        //});
     </script>
 </head>
 
@@ -36,6 +36,8 @@
     <p>This page contains information about shares.</p>
     <p id="currentSharePrice"></p> <!-- Display current share price using the code in the script section. -->
     <!-- note, we are in html now, so the way we comment has changed -->
+    <label for="currency-field">Enter current Share Price</label>
+    <input type="number" name="ecurrentSharePrice" id="ecurrentSharePrice" value="4.5000"  placeholder="4.5000">
     <!-- Button to load shares data from the API -->
     <button onclick="
         fetch('http://192.168.8.221:8000/free', {
@@ -54,6 +56,7 @@
             data = JSON.parse(data) /* the data is a JSON string so we need to parse it into a JavaScript object - took me ages to find I needed to use .parse() */
             console.log('Parsed Data:', data);
 
+            let currentSharePrice = parseFloat(document.getElementById('ecurrentSharePrice').value); /* get the current share price from the input field and convert it to a float */
             let totalShares=0; /* initialize our totals - the variables could be better named I know */
             let totalCostValue=0.0; /* we are keepimng some running totals so they all needed to be stored somewhere separately */
             let totalPartner =0

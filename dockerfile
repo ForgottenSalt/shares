@@ -10,3 +10,4 @@ COPY ./app/__init__.py /code
 
 COPY ./app/main.py /code
 
+CMD ["fastapi", "run", "main.py", "--proxy-headers", "--port", "80"]

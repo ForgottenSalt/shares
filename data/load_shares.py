@@ -45,21 +45,32 @@ cursor.execute("SELECT version();")
 record = cursor.fetchone()
 print("You are connected to - ", record,"\n")
 
-# create the definition and a blank database table as per requirement
-# note the columns and their data types
-# ID is the primary key and will auto increment every time a new record is added
+# above prints out the following
+
+#{'user': 'user', 'channel_binding': 'prefer', 'dbname': 'database', 'host': 'kposlm', 'port': '5432', 'options': '', 
+# 'sslmode': 'prefer', 'sslcompression': '0', 'sslcertmode': 'allow', 'sslsni': '1', 'ssl_min_protocol_version': 'TLSv1.2', 
+# 'gssencmode': 'disable', 'krbsrvname': 'postgres', 'gssdelegation': '0', 'target_session_attrs': 'any', 'load_balance_hosts': 'disable'} 
+#
+#You are connected to -  ('PostgreSQL 18.0 (Debian 18.0-1.pgdg13+3) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit',) 
 
 ## Only execute the following if you want to erase the table and start a fresh upload of all data from the CSV file
-## otherwise it will insert rows into the existing table and you will have duplicate records
+## otherwise it will insert rows into the existing table and you will have duplicate records!
 ##
-## WARNING ! so yah, this actually doesn't work and seems to lock out the database and makes it unresponsive 
-## so just manually drop the table from postgress via url: http://192.168.8.227:5050/browser/
-## does it need the cursor to close and then reopen?
+## Can also do this database delete drop by manually dropping the table from postgress via url: http://192.168.8.227:5050/browser/
+## only got the below working because I declared a new cursor (cursor_drop) to drop the table - could not use
+## cursor variable as it locked the database 
+## this was useful sql to paste into postgres to figure what is locking the table
+##SELECT * FROM pg_stat_activity WHERE state IN ('active', 'idle in transaction') 
+
+#cursor_drop = conn.cursor()
 #create_drop_query = "DROP TABLE taxfree;"
-#cursor.execute(create_drop_query)
+#cursor_drop.execute(create_drop_query)
 #conn.commit()
 
 #####
+# create the definition and a blank database table as per requirement
+# note the columns and their data types
+# ID is the primary key and will auto increment every time a new record is added
 
 create_table_query = '''CREATE TABLE IF NOT EXISTS taxfree
           (ID SERIAL PRIMARY KEY     NOT NULL,
@@ -98,7 +109,7 @@ print("Table created successfully in PostgreSQL ")
 #
 # or just edit the csv file to include the above?!
 
-with open(r'data\Export tax free.csv', newline='') as taxfree:
+with open('Export tax free.csv', newline='') as taxfree:
      reader = csv.reader(taxfree,delimiter=',')
      # the first row is the header row so skip it
      # a header row looks like this:
